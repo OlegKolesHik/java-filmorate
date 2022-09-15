@@ -51,11 +51,12 @@ public class UserController {
             log.debug("Ошибка добавления даты рождения");
             throw new ValidationException("Дата рождения не может быть в будущем");
         }
-        if(user.getName().isBlank() || user.getName().equals(" ")) {
+        if(user.getName().isBlank() || user.getName().equals("")) {
+            user.setName(user.getLogin());
             log.debug("Ошибка имени");
             throw new ValidationException("Имя для отображения может быть пустым — в таком случае будет использован логин");
         }
-    }
+            }
 
     //обновление пользователя;
     @PutMapping
