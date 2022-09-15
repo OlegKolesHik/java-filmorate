@@ -40,6 +40,10 @@ public class FilmController {
             log.error("Ошибка");
             throw new ValidationException("Продолжительность фильма должна быть положительной");
         }
+        if(film.getId() < 0) {
+            log.debug("Идентификатор меньше 0");
+            throw new ValidationException("Идентификатор должен быть положительным");
+        }
     }
 
 
@@ -68,6 +72,7 @@ public class FilmController {
     //получение всех фильмов.
     @GetMapping
     public Collection<Film> allFilms() {
+        log.info("Список фильмов {}", films.size());
         return films.values();
     }
 }

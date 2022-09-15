@@ -59,9 +59,16 @@ class FilmControllerTest {
     }
 
     @Test
-    void validateDurationTest() {
-        film.setDuration(-101);
+    void validateDuration() {
+        film.setDuration(-1);
         Exception exception = assertThrows(ValidationException.class, () -> filmController.validate(film));
         assertEquals("Продолжительность фильма должна быть положительной", exception.getMessage());
+    }
+
+    @Test
+    void negativeId(){
+        film.setId(-1);
+        Exception exception = assertThrows(ValidationException.class, () -> filmController.validate(film));
+        assertEquals("Идентификатор должен быть положительным", exception.getMessage());
     }
 }
