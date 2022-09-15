@@ -49,11 +49,13 @@ public class FilmController {
 
     //добавление фильма;
     @PostMapping
-    public Film add(@RequestBody Film film) throws ValidationException {
+    public Film create(@RequestBody Film film) throws ValidationException {
         validate(film);
         if (films.containsKey(film.getId())) {
             throw new ValidationException("Фильм уже есть в списке");
         } else {
+             int generateId = film.getId();
+            film.setId(++generateId);
             films.put(film.getId(), film);
             log.info("Фильм {} добавлен", film.getName());
             return film;
@@ -65,7 +67,7 @@ public class FilmController {
     public Film update(@RequestBody Film film) throws ValidationException {
         validate(film);
         if (!films.containsKey(film.getId())) {
-            add(film);
+            create(film);
         } else {
             films.put(film.getId(), film);
             log.info("Фильм {} обновлен", film.getName());

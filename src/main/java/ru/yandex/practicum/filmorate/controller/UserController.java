@@ -7,10 +7,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 @RestController
@@ -27,7 +24,7 @@ public class UserController {
         if (users.containsKey(user.getId())) {
             throw new ValidationException("Пользователь уже зарегистрирован.");
         } else {
-            user.setId(generateId++);
+            user.setId(++generateId);
             users.put(user.getId(), user);
             log.info("Пользователь {} добавлен", user.getEmail());
             return user;
@@ -66,18 +63,15 @@ public class UserController {
     @PutMapping
     public User update(@RequestBody User user) throws ValidationException {
         validate(user);
-        if (!users.containsKey(user.getId())) {
-            create(user);
-        } else {
-            users.put(user.getId(), user);
-            log.info("Пользователь {} обновлен", user.getEmail());
-        } return user;
+        users.put(user.getId(), user);
+        log.info("Пользователь {} обновлен", user.getEmail());
+        return user;
     }
-
     //получение списка всех пользователей.
     @GetMapping
-    public List<User> allUsers() {
-        return new ArrayList<>(users.values());
+    public Collection<User> allUsers() {
+        log.info("Количество пользователей {}", users.size());
+        return users.values();
     }
 
 }
