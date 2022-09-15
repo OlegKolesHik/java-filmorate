@@ -43,15 +43,15 @@ public class UserController {
             log.debug("Ошибка добавления почты");
             throw new ValidationException("Электронная почта не может быть пустой и должна содержать символ @");
         }
-        if (user.getLogin().isBlank() || user.getLogin() == null) {
+        if (user.getLogin() == null || user.getLogin().contains(" ")) {
             log.debug("Ошибка добавления логина");
             throw new ValidationException("Логин не может быть пустым и содержать пробелы");
         }
-        if(user.getBirthday().isAfter(LocalDate.now())) {
+        if(user.getBirthday() == null || user.getBirthday().isAfter(LocalDate.now())) {
             log.debug("Ошибка добавления даты рождения");
             throw new ValidationException("Дата рождения не может быть в будущем");
         }
-        if(user.getName().isBlank() || user.getName().equals("")) {
+        if(user.getName() == null || user.getName().equals("")) {
             user.setName(user.getLogin());
             log.debug("Имя для отображения может быть пустым — в таком случае будет использован логин");
 
@@ -64,12 +64,16 @@ public class UserController {
 
     //обновление пользователя;
     @PutMapping
-    public User update(@Valid @RequestBody User user) throws ValidationException {
+    public User update(@RequestBody User user) throws ValidationException {
         validate(user);
-        users.put(user.getId(), user);
-        log.info("Пользователь {} обновлен", user.getEmail());
-        return user;
+        if (!users.containsKey(user.getId())) {
+            create(user);
+        } else {
+            users.put(user.getId(), user);
+            log.info("Пользователь {} обновлен", user.getEmail());
+        } return user;
     }
+
     //получение списка всех пользователей.
     @GetMapping
     public List<User> allUsers() {

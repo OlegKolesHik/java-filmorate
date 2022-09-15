@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.web.bind.annotation.RequestMapping;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
@@ -18,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @SpringBootTest
 class FilmControllerTest {
      Film film = new Film();
-     @Autowired
+
      FilmController filmController;
 
     @BeforeEach
@@ -37,6 +38,13 @@ class FilmControllerTest {
     @Test
     void nameNull() {
         film.setName(null);
+        Exception exception = assertThrows(ValidationException.class, () -> filmController.validate(film));
+        assertEquals("Hазвание не может быть пустым", exception.getMessage());
+    }
+
+    @Test
+    void nameIsEmpty() {
+        film.setName("");
         Exception exception = assertThrows(ValidationException.class, () -> filmController.validate(film));
         assertEquals("Hазвание не может быть пустым", exception.getMessage());
     }

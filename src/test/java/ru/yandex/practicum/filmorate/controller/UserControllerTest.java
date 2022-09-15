@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.web.bind.annotation.RequestMapping;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import org.junit.jupiter.api.Test;
@@ -15,7 +16,6 @@ import org.junit.jupiter.api.BeforeEach;
 @SpringBootTest
 class UserControllerTest {
 
-     @Autowired
      UserController userController;
 
     User user;
@@ -39,13 +39,19 @@ class UserControllerTest {
     @Test
     void loginNull() {
         user.setLogin(null);
+        Exception exception = assertThrows(ValidationException.class, () -> userController.validate(user));
+        assertEquals("Логин не может быть пустым и содержать пробелы", exception.getMessage());
+    }
+
+    @Test
+    void loginIsEmpty() {
         user.setLogin(" ");
         Exception exception = assertThrows(ValidationException.class, () -> userController.validate(user));
         assertEquals("Логин не может быть пустым и содержать пробелы", exception.getMessage());
     }
 
     @Test
-    void EmptyName() throws ValidationException {
+    void emptyName() throws ValidationException {
         user.setName("");
         userController.validate(user);
         assertEquals(user.getLogin(), user.getName());
@@ -78,5 +84,19 @@ class UserControllerTest {
         user.setBirthday(LocalDate.now().plusDays(1));
         Exception exception = assertThrows(ValidationException.class, () -> userController.validate(user));
         assertEquals("Дата рождения не может быть в будущем", exception.getMessage());
+    }
+
+    @Test
+    void birthdayFutureNull() {
+        user.setBirthday(null);
+        Exception exception = assertThrows(ValidationException.class, () -> userController.validate(user));
+        assertEquals("Дата рождения не может быть в будущем", exception.getMessage());
+    }
+
+    @Test
+    void nameNull() throws ValidationException {
+        user.setName(null);
+        userController.validate(user);
+        assertEquals(user.getLogin(), user.getName());
     }
 }
