@@ -53,8 +53,12 @@ public class UserController {
         }
         if(user.getName().isBlank() || user.getName().equals("")) {
             user.setName(user.getLogin());
-            log.debug("Ошибка имени");
-            throw new ValidationException("Имя для отображения может быть пустым — в таком случае будет использован логин");
+            log.debug("Имя для отображения может быть пустым — в таком случае будет использован логин");
+
+        }
+        if(user.getId() < 0) {
+            log.debug("Ошибка идентификатора");
+            throw new ValidationException("Идентификатор должен быть положительным");
         }
             }
 

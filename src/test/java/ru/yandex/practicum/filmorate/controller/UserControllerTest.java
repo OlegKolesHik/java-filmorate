@@ -15,13 +15,15 @@ import org.junit.jupiter.api.BeforeEach;
 @SpringBootTest
 class UserControllerTest {
 
-     User user = new User();
      @Autowired
      UserController userController;
+
+    User user;
 
     @BeforeEach
     void userTest() {
         userController = new UserController();
+        user = new User();
         user.setLogin("dolore");
         user.setName("Nick Name");
         user.setEmail("mail@mail.ru");
