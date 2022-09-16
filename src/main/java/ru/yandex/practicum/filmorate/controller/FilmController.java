@@ -15,15 +15,16 @@ import java.util.*;
 @RequestMapping("/films")
 public class FilmController {
 
-    private Map<Integer, Film> films = new HashMap();
-    LocalDate data = LocalDate.of(1895, Month.DECEMBER, 28);
+    private final Map<Integer, Film> films = new HashMap();
+    protected LocalDate data = LocalDate.of(1895, Month.DECEMBER, 28);
+    private int generateId = 0;
 
     //название не может быть пустым;
     //максимальная длина описания — 200 символов;
     //дата релиза — не раньше 28 декабря 1895 года;
     //продолжительность фильма должна быть положительной.
 
-    public void validate(Film film) throws ValidationException {
+    protected void validate(Film film) throws ValidationException {
         if(film.getName() == null || film.getName().isBlank()) {
             log.error("Ошибка");
             throw new ValidationException("Hазвание не может быть пустым");
@@ -54,7 +55,6 @@ public class FilmController {
         if (films.containsKey(film.getId())) {
             throw new ValidationException("Фильм уже есть в списке");
         } else {
-             int generateId = film.getId();
             film.setId(++generateId);
             films.put(film.getId(), film);
             log.info("Фильм {} добавлен", film.getName());
