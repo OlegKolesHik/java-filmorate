@@ -19,11 +19,6 @@ public class FilmController {
     protected LocalDate data = LocalDate.of(1895, Month.DECEMBER, 28);
     private int generateId = 0;
 
-    //название не может быть пустым;
-    //максимальная длина описания — 200 символов;
-    //дата релиза — не раньше 28 декабря 1895 года;
-    //продолжительность фильма должна быть положительной.
-
     protected void validate(Film film) throws ValidationException {
         if(film.getName() == null || film.getName().isBlank()) {
             log.error("Ошибка");
