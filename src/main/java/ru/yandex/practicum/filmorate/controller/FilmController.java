@@ -1,80 +1,69 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import ru.yandex.practicum.filmorate.exceptions.ValidationException;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.model.Film;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.time.LocalDate;
-import java.time.Month;
 import java.util.*;
 
 @Slf4j
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/films")
 public class FilmController {
 
-    private final Map<Integer, Film> films = new HashMap();
-    protected LocalDate data = LocalDate.of(1895, Month.DECEMBER, 28);
-    private int generateId = 0;
-
-    protected void validate(Film film) throws ValidationException {
-        if(film.getName() == null || film.getName().isBlank()) {
-            log.error("Ошибка");
-            throw new ValidationException("Hазвание не может быть пустым");
-        }
-        if(film.getDescription().length() > 200) {
-            log.error("Ошибка");
-            throw new ValidationException("Максимальная длина описания — 200 символов");
-        }
-        if(film.getReleaseDate().isBefore(data)) {
-            log.error("Ошибка");
-            throw new ValidationException("Дата релиза — не раньше 28 декабря 1895 года");
-        }
-        if(film.getDuration() < 0) {
-            log.error("Ошибка");
-            throw new ValidationException("Продолжительность фильма должна быть положительной");
-        }
-        if(film.getId() < 0) {
-            log.debug("Идентификатор меньше 0");
-            throw new ValidationException("Идентификатор должен быть положительным");
-        }
-    }
-
-
-    //добавление фильма;
-    @PostMapping
-    public Film create(@RequestBody Film film) throws ValidationException {
-        validate(film);
-        if (films.containsKey(film.getId())) {
-            throw new ValidationException("Фильм уже есть в списке");
-        } else {
-            film.setId(++generateId);
-            films.put(film.getId(), film);
-            log.info("Фильм {} добавлен", film.getName());
-            return film;
-        }
-    }
+private final FilmService filmService;
 
     //обновление фильма;
     @PutMapping
-    public Film update(@RequestBody Film film) throws ValidationException {
-        validate(film);
-        if (!films.containsKey(film.getId())) {
-            create(film);
-        } else {
-            films.put(film.getId(), film);
-            log.info("Фильм {} обновлен", film.getName());
-
-        }
-        return film;
+    public Film update(@Valid @RequestBody Film film) {
+        return filmService.update(film);
     }
+
+    //добавление фильма;
+    @PostMapping
+    public Film createFilm(@RequestBody @Valid Film film) {
+        return filmService.createFilm(film);
+}
 
     //получение всех фильмов.
     @GetMapping
     public Collection<Film> allFilms() {
-        log.info("Список фильмов {}", films.size());
-        return films.values();
+        return filmService.allFilms();
     }
+
+    //PUT /films/{id}/like/{userId} — пользователь ставит лайк фильму.
+    @PutMapping("/{id}/like/{userId}")
+    public Film likeFilm(@PathVariable Long id, @PathVariable Long userId) {
+        return filmService.likeFilm(id, userId);
+    }
+
+    @GetMapping("/{id}")
+    public Film filmsById(@PathVariable Long id) {
+        return filmService.filmById(id);
+    }
+
+    //DELETE /films/{id}/like/{userId} — пользователь удаляет лайк.
+    @DeleteMapping("/{id}/like/{userId}")
+    public Film likeDelete(@PathVariable Long id, @PathVariable Long userId){
+        return filmService.likeDelete(id,userId);
+    }
+
+    //GET /films/popular?count={count} — возвращает список из первых count фильмов по количеству лайков. Если значение
+    // параметра count не задано, верните первые 10.
+
+    //Параметры метода, аннотированные  @RequestParam  , являются обязательными по умолчанию.
+    // @RequestParam как необязательный с обязательным атрибутом count: required = false для внедрения параметра count
+    //Установить значение по умолчанию для @RequestParam  , используя атрибут defaultValue : defaultValue = "10"
+    @GetMapping("/popular")
+    public List<Film> returnFilms(@RequestParam(required = false) Integer count) {
+        log.info("Популярные фильмы = " + count);
+        return filmService.getPopularFilms(count);
+    }
+
+
 }

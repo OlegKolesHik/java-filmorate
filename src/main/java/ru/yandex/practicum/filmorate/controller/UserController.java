@@ -1,77 +1,76 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import ru.yandex.practicum.filmorate.exceptions.ValidationException;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.service.UserService;
 
 import javax.validation.Valid;
-import java.time.LocalDate;
 import java.util.*;
 
+//@RequiredArgsConstructor //Чтобы скомбинировать краткость внедрения зависимостей через поля с надёжностью внедрения
+//// через конструктор можно использовать библиотеку Lombok и аннотацию @RequiredArgsConstructor
+////Увидев аннотацию @RequiredArgsConstructor, Lombok создаст примерно такой же конструктор, который был бы
+//// при внедрении через конструктор, только без аннотации @Autowired
 @Slf4j
-@RestController
+@RestController //способ конвертировать объект в тело ответа — объявить контроллер с помощью аннотации @RestController.
+// Она делает всё то же самое, что и аннотация @Controller, а также добавляет аннотацию @ResponseBody для каждого
+// метода обработчика запросов. Это позволяет немного упростить написание контроллера.
+@RequiredArgsConstructor
 @RequestMapping("/users")
 public class UserController {
 
-    private final Map<Integer, User> users = new HashMap<>();
-    private int generateId = 0;
+    //В контроллере прописывается валидация из внешнего мира
+    private final UserService userService;
 
     //создание пользователя;
     @PostMapping
-    public User create(@Valid @RequestBody User user) throws ValidationException {
-        validate(user);
-        if (users.containsKey(user.getId())) {
-            throw new ValidationException("Пользователь уже зарегистрирован.");
-        } else {
-            user.setId(++generateId);
-            users.put(user.getId(), user);
-            log.info("Пользователь {} добавлен", user.getEmail());
-            return user;
-        }
+    public User create(@Valid @RequestBody  User user) {
+        return userService.create(user);
     }
-
-    //электронная почта не может быть пустой и должна содержать символ @;
-    //логин не может быть пустым и содержать пробелы;
-    //имя для отображения может быть пустым — в таком случае будет использован логин;
-    //дата рождения не может быть в будущем.
-    public void validate(User user) throws ValidationException {
-        if(user.getEmail() == null || user.getEmail().isBlank() || !user.getEmail().contains("@")) {
-            log.debug("Ошибка добавления почты");
-            throw new ValidationException("Электронная почта не может быть пустой и должна содержать символ @");
-        }
-        if (user.getLogin() == null || user.getLogin().contains(" ")) {
-            log.debug("Ошибка добавления логина");
-            throw new ValidationException("Логин не может быть пустым и содержать пробелы");
-        }
-        if(user.getBirthday() == null || user.getBirthday().isAfter(LocalDate.now())) {
-            log.debug("Ошибка добавления даты рождения");
-            throw new ValidationException("Дата рождения не может быть в будущем");
-        }
-        if(user.getName() == null || user.getName().equals("")) {
-            user.setName(user.getLogin());
-            log.debug("Имя для отображения может быть пустым — в таком случае будет использован логин");
-
-        }
-        if(user.getId() < 0) {
-            log.debug("Ошибка идентификатора");
-            throw new ValidationException("Идентификатор должен быть положительным");
-        }
-            }
 
     //обновление пользователя;
     @PutMapping
-    public User update(@RequestBody User user) throws ValidationException {
-        validate(user);
-        users.put(user.getId(), user);
-        log.info("Пользователь {} обновлен", user.getEmail());
-        return user;
+    public User update(@Valid @RequestBody User user) {
+        return userService.update(user);
     }
+
     //получение списка всех пользователей.
     @GetMapping
     public Collection<User> allUsers() {
-        log.info("Количество пользователей {}", users.size());
-        return users.values();
+        return userService.allUsers();
     }
 
+    //С помощью аннотации @PathVariable добавьте возможность получать каждый фильм и данные о пользователях
+    // по их уникальному идентификатору: GET .../users/{id}
+    @GetMapping("/{id}")
+    public User userById(@PathVariable Long id) {
+        return userService.userById(id);
+    }
+
+    //PUT /users/{id}/friends/{friendId} — добавление в друзья.
+    @PutMapping("/{id}/friends/{friendId}")
+    public void putFriend(@PathVariable Long id, @PathVariable Long friendId) {
+        userService.putFriend(id, friendId);
+    }
+
+    //DELETE /users/{id}/friends/{friendId} — удаление из друзей.
+    @DeleteMapping("/{id}/friends/{friendId}")
+    public void deleteFriends(@PathVariable Long id, @PathVariable Long friendId) {
+        userService.deleteFriends(id, friendId);
+        }
+
+    //GET /users/{id}/friends — возвращаем список пользователей, являющихся его друзьями.
+    @GetMapping("/{id}/friends")
+    public List<User> allFriendUser(@PathVariable Long id) {
+        return userService.allFriendUser(id);
+    }
+
+    //GET /users/{id}/friends/common/{otherId} — список друзей, общих с другим пользователем.
+    @GetMapping("/{id}/friends/common/{otherId}")
+    public List<User> listFriendsCommon(@PathVariable Long id, @PathVariable Long otherId) {
+         return userService.listFriendsCommon(id, otherId);
+    }
 }
