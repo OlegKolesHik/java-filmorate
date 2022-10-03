@@ -17,7 +17,7 @@ import java.util.List;
 public class FilmService {
 
     //Service - Бизнес-логика
-    InMemoryFilmStorage inMemoryFilmStorage = new InMemoryFilmStorage();
+    private InMemoryFilmStorage inMemoryFilmStorage = new InMemoryFilmStorage();
     private final FilmStorage filmStorage;
 
     @Autowired
