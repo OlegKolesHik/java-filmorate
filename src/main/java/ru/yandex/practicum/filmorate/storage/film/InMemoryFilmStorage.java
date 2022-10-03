@@ -24,19 +24,19 @@ public class InMemoryFilmStorage implements FilmStorage {
 
         public void validate(Film film) {
         if (film.getName() == null || film.getName().isBlank()) {
-            log.error("Ошибка");
+            log.error("Ошибка1");
             throw new ValidationException("Hазвание не может быть пустым");
         }
         if (film.getDescription().length() > 200) {
-            log.error("Ошибка");
+            log.error("Ошибка2");
             throw new ValidationException("Максимальная длина описания — 200 символов");
         }
         if (film.getReleaseDate().isBefore(data)) {
-            log.error("Ошибка");
+            log.error("Ошибка3");
             throw new ValidationException("Дата релиза — не раньше 28 декабря 1895 года");
         }
         if (film.getDuration() <= 0) {
-            log.error("Ошибка");
+            log.error("Ошибка4");
             throw new ValidationException("Продолжительность фильма должна быть положительной");
         }
     }

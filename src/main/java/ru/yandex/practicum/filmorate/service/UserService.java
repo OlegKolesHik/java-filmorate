@@ -18,7 +18,7 @@ public class UserService {
     //Service - Бизнес-логика
 
     private final UserStorage userStorage;
-    private InMemoryUserStorage inMemoryUserStorage = new InMemoryUserStorage();
+    public InMemoryUserStorage inMemoryUserStorage = new InMemoryUserStorage();
 
     @Autowired
     public UserService(UserStorage userStorage) {
