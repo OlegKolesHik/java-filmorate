@@ -43,7 +43,7 @@ public class UserService {
     public void putFriend(Long id, Long friendId) {
         if (id < 0 || friendId < 0) {
             throw new NotFoundException("Id не может быть отрицательным");
-            }
+        }
         userStorage.putFriend(id, friendId);
     }
 

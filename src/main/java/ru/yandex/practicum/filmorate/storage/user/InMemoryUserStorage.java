@@ -122,10 +122,10 @@ public class InMemoryUserStorage implements UserStorage {
     public  List<User> allFriendUser(Long id) {
         Set<Long> allFriendsUser = users.get(id).getFriends();
         List<User> friends= new ArrayList<>();
-           for(Long idFriends: allFriendsUser) {
-           friends.add(users.get(idFriends));
+        for(Long idFriends: allFriendsUser) {
+            friends.add(users.get(idFriends));
 
-          }
+        }
         return friends;
     }
 }

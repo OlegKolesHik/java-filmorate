@@ -33,10 +33,10 @@ public class FilmService {
     public Film update(Film film) {
         inMemoryFilmStorage.validate(film);
         if (film.getId() < 0) {
-        throw new NotFoundException("Id не может быть отрицательным");
+            throw new NotFoundException("Id не может быть отрицательным");
         }
-            return filmStorage.update(film);
-        }
+        return filmStorage.update(film);
+    }
 
     public Collection<Film> allFilms() {
         return filmStorage.allFilms();

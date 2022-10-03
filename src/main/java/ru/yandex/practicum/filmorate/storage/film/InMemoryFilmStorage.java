@@ -22,21 +22,21 @@ public class InMemoryFilmStorage implements FilmStorage {
     private Long generateId =0L;
     private final Map<Long, Film> films = new HashMap<>();
 
-        public void validate(Film film) {
+    public void validate(Film film) {
         if (film.getName() == null || film.getName().isBlank()) {
-            log.error("Ошибка1");
+            log.error("Ошибка");
             throw new ValidationException("Hазвание не может быть пустым");
         }
         if (film.getDescription().length() > 200) {
-            log.error("Ошибка2");
+            log.error("Ошибка");
             throw new ValidationException("Максимальная длина описания — 200 символов");
         }
         if (film.getReleaseDate().isBefore(data)) {
-            log.error("Ошибка3");
+            log.error("Ошибка");
             throw new ValidationException("Дата релиза — не раньше 28 декабря 1895 года");
         }
         if (film.getDuration() <= 0) {
-            log.error("Ошибка4");
+            log.error("Ошибка");
             throw new ValidationException("Продолжительность фильма должна быть положительной");
         }
     }
@@ -56,7 +56,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     //обновление фильма;
     @Override
     public Film update(Film film) {
-            films.put(film.getId(), film);
+        films.put(film.getId(), film);
         return film;
     }
 
@@ -83,7 +83,7 @@ public class InMemoryFilmStorage implements FilmStorage {
         film.getLike().remove(idUser);
         log.info("Удаление лайка " + film.getLike());
         return film;
-        }
+    }
 
     //возвращает список из первых count фильмов по количеству лайков. Если значение
     //параметра count не задано, верните первые 10
@@ -100,9 +100,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     @Override
     public Film filmById(Long id) {
         return films.get(id);
-        }
+    }
 
 
 }
-
-
