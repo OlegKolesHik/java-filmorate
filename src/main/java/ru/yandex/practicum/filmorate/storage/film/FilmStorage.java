@@ -25,4 +25,7 @@ public interface FilmStorage {
     Film filmById(Long id);
 
     List<Film> returnFilmsPopular(int count);
+
+    boolean containsNewFilms(long id);
 }
+

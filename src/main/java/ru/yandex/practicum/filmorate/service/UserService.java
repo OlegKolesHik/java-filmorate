@@ -25,12 +25,19 @@ public class UserService {
         this.userStorage = userStorage;
     }
 
-    public User create(User user) throws ValidationException {
+    public User create(User user) {
         inMemoryUserStorage.validate(user);
         return userStorage.create(user);
     }
 
-    public User update(User user) throws ValidationException {
+    public void validateNewUsers(long id) {
+        if (!userStorage.containsNewUsers(id)) {
+            throw new NotFoundException(String.format("Пользователь не найден", id));
+        }
+    }
+
+    public User update(User user) {
+        validateNewUsers(user.getId());
         inMemoryUserStorage.validate(user);
         return userStorage.update(user);
     }
@@ -41,14 +48,18 @@ public class UserService {
 
     //добавление в друзья.
     public void putFriend(Long id, Long friendId) {
+        validateNewUsers(id);
+        validateNewUsers(friendId);
         if (id < 0 || friendId < 0) {
             throw new NotFoundException("Id не может быть отрицательным");
-        }
+            }
         userStorage.putFriend(id, friendId);
     }
 
     //удаление из друзей.
     public void deleteFriends(Long id, Long friendId) {
+        validateNewUsers(id);
+        validateNewUsers(friendId);
         if (id < 0 || friendId < 0) {
             throw new NotFoundException("Id не может быть отрицательным");
         }
@@ -57,6 +68,7 @@ public class UserService {
 
     //возвращаем список пользователей, являющихся его друзьями.
     public List<User> allFriendUser(Long id) {
+        validateNewUsers(id);
         if (id <= 0) {
             throw new NotFoundException("Id не может быть отрицательным");
         }
@@ -65,6 +77,8 @@ public class UserService {
 
     //список друзей, общих с другим пользователем.
     public List<User> listFriendsCommon(Long id, Long otherId) {
+        validateNewUsers(id);
+        validateNewUsers(otherId);
         if (id < 0 || otherId < 0) {
             throw new NotFoundException("Id не может быть отрицательным");
         }
@@ -72,6 +86,7 @@ public class UserService {
     }
 
     public User userById(Long id) {
+        validateNewUsers(id);
         if(id < 0)
             throw new NotFoundException("Id не может быть отрицательным");
         return userStorage.userById(id);

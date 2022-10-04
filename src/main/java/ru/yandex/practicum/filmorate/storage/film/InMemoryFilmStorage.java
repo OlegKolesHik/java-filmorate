@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.storage.film;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
@@ -22,41 +23,52 @@ public class InMemoryFilmStorage implements FilmStorage {
     private Long generateId =0L;
     private final Map<Long, Film> films = new HashMap<>();
 
+    @Override
+    public boolean containsNewFilms(long id) {
+        return films.containsKey(id);
+    }
+
+
     public void validate(Film film) {
         if (film.getName() == null || film.getName().isBlank()) {
-            log.error("Ошибка");
+            log.debug("Ошибка1");
             throw new ValidationException("Hазвание не может быть пустым");
         }
         if (film.getDescription().length() > 200) {
-            log.error("Ошибка");
+            log.debug("Ошибка2");
             throw new ValidationException("Максимальная длина описания — 200 символов");
         }
         if (film.getReleaseDate().isBefore(data)) {
-            log.error("Ошибка");
+            log.debug("Ошибка3");
             throw new ValidationException("Дата релиза — не раньше 28 декабря 1895 года");
         }
-        if (film.getDuration() <= 0) {
-            log.error("Ошибка");
+        if (film.getDuration() < 0) {
+            log.debug("Ошибка4");
             throw new ValidationException("Продолжительность фильма должна быть положительной");
         }
     }
 
     //добавление фильма;
     @Override
-    public Film createFilm(Film film) {
+    public Film createFilm(Film film) throws  ValidationException{
         if (films.containsKey(film.getId())) {
             throw new ValidationException("Фильм уже есть в списке");
         } else {
             film.setId(++generateId);
-            films.put(generateId, film);
-            return film;
+            films.put(film.getId(), film);
         }
+        return film;
     }
 
     //обновление фильма;
     @Override
     public Film update(Film film) {
-        films.put(film.getId(), film);
+        if (!films.containsKey(film.getId())) {
+            throw new NotFoundException("фильм не найден");
+        } else {
+            films.put(film.getId(), film);
+            log.info("Фильм {} обновлен.", film.getName());
+        }
         return film;
     }
 

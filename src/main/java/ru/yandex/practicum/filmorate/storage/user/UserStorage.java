@@ -23,5 +23,5 @@ public interface UserStorage {
 
     List<User> listFriendsCommon(Long id, Long otherId);
 
-
+    boolean containsNewUsers(long id);
 }

@@ -24,17 +24,22 @@ public class InMemoryUserStorage implements UserStorage {
     private final Map<Long, User> users = new HashMap<>();
     private Long generateId =0l;
 
+    public boolean containsNewUsers(long id) {
+        return users.containsKey(id);
+    }
+
     //создание пользователя;
     @Override
-    public User create(User user) {
+    public User create(User user) throws ValidationException {
         if (users.containsKey(user.getId())) {
             throw new ValidationException("Пользователь уже зарегистрирован.");
         } else {
             user.setId(++generateId);
-            users.put(generateId, user);
+            users.put(user.getId(), user);
             log.info("Пользователь {} добавлен", user.getEmail());
-            return user;
+
         }
+        return user;
     }
 
     @Override
@@ -44,8 +49,13 @@ public class InMemoryUserStorage implements UserStorage {
         if (id < 0) {
             throw new NotFoundException("Id не может быть отрицательным");
         }
-        users.replace(id, user);
-        log.info("Пользователь {} обновлен", user.getEmail());
+        if (users.containsKey(user.getId())) {
+            users.put(user.getId(), user);
+            log.info("Пользователь {} обновлен", user.getEmail());
+        } else {
+            throw new NotFoundException("Id пользователя не найден");
+        }
+
         return user;
     }
 
