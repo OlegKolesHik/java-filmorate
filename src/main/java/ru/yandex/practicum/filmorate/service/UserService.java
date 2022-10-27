@@ -1,94 +1,98 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.model.Friend;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
-import ru.yandex.practicum.filmorate.storage.user.UserStorage;
+import ru.yandex.practicum.filmorate.storage.dao.FriendStorage;
+import ru.yandex.practicum.filmorate.storage.dao.UserStorage;
 
-import java.util.Collection;
+
+import javax.validation.Valid;
+import javax.validation.constraints.Positive;
+import java.time.LocalDate;
 import java.util.List;
 
-@Service//бизнес-логика находится на уровне сервиса, поэтому мы используем аннотацию @Service, чтобы указать, что
-// класс принадлежит этому уровню
+@Data
+@Service("userService")
 public class UserService {
-
-    //Service - Бизнес-логика
-
     private final UserStorage userStorage;
-    public InMemoryUserStorage inMemoryUserStorage = new InMemoryUserStorage();
+    private final FriendStorage friendStorage;
 
     @Autowired
-    public UserService(UserStorage userStorage) {
+    public UserService(@Qualifier("dbUser") UserStorage userStorage, FriendStorage friendStorage) {
         this.userStorage = userStorage;
+        this.friendStorage = friendStorage;
     }
 
-    public User create(User user) {
-        inMemoryUserStorage.validate(user);
-        return userStorage.create(user);
-    }
+    public User getUser(Long id) throws NotFoundException {
+        if (id < 0) {
+            throw new NotFoundException(String.format("Id не должен быть меньше нуля", id));
+        }
 
-    public void validateNewUsers(long id) {
-        if (!userStorage.containsNewUsers(id)) {
+        final User user = userStorage.getUser(id);
+
+        if (user == null) {
             throw new NotFoundException(String.format("Пользователь не найден", id));
         }
+
+        return user;
     }
 
-    public User update(User user) {
-        validateNewUsers(user.getId());
-        inMemoryUserStorage.validate(user);
-        return userStorage.update(user);
+    public User createUser(User user) {
+        validate(user);
+
+        return userStorage.createUser(user);
     }
 
-    public Collection<User> allUsers() {
-        return userStorage.allUsers();
-    }
+    public User updateUser(User user) {
+        validate(user);
+        final User resultUser = userStorage.getUser(user.getId());
 
-    //добавление в друзья.
-    public void putFriend(Long id, Long friendId) {
-        validateNewUsers(id);
-        validateNewUsers(friendId);
-        if (id < 0 || friendId < 0) {
-            throw new NotFoundException("Id не может быть отрицательным");
-            }
-        userStorage.putFriend(id, friendId);
-    }
-
-    //удаление из друзей.
-    public void deleteFriends(Long id, Long friendId) {
-        validateNewUsers(id);
-        validateNewUsers(friendId);
-        if (id < 0 || friendId < 0) {
-            throw new NotFoundException("Id не может быть отрицательным");
+        if (resultUser == null) {
+            throw new NotFoundException(String.format("Пользователь не найден в базе данных.", user.getId()));
         }
-        userStorage.deleteFriends(id, friendId);
+
+        return userStorage.updateUser(user);
     }
 
-    //возвращаем список пользователей, являющихся его друзьями.
-    public List<User> allFriendUser(Long id) {
-        validateNewUsers(id);
-        if (id <= 0) {
-            throw new NotFoundException("Id не может быть отрицательным");
+    public List<User> getUserList() {
+        return userStorage.getUserList();
+    }
+
+    private User validate(User user) {
+        if (user.getName() == null || user.getName().isEmpty()) {
+            user.setName(user.getLogin());
         }
-        return userStorage.allFriendUser(id);
-    }
-
-    //список друзей, общих с другим пользователем.
-    public List<User> listFriendsCommon(Long id, Long otherId) {
-        validateNewUsers(id);
-        validateNewUsers(otherId);
-        if (id < 0 || otherId < 0) {
-            throw new NotFoundException("Id не может быть отрицательным");
+        if (user.getLogin().contains(" ")) {
+            throw new ValidationException("Логин должен быть без пробелов");
+        } else if (user.getBirthday().isAfter(LocalDate.now())) {
+            throw new ValidationException("День рождения не может быть в будущем");
         }
-        return userStorage.listFriendsCommon(id, otherId);
+        return user;
     }
 
-    public User userById(Long id) {
-        validateNewUsers(id);
-        if(id < 0)
-            throw new NotFoundException("Id не может быть отрицательным");
-        return userStorage.userById(id);
+    public Friend addFriendship(@Valid @Positive Long id,
+                                    @Valid @Positive Long friendId) {
+        return friendStorage.addFriendship(id, friendId);
+    }
+
+    public void deleteFriendship(@Valid @Positive Long id,
+                                 @Valid @Positive Long friendId) {
+        friendStorage.deleteFriendship(id, friendId);
+    }
+
+    public List<User> getFriendsList(@Valid @Positive Long userId) {
+        return friendStorage.getFriendsOfUser(userId);
+    }
+
+    public List<User> getMutualFriendList(@Valid @Positive Long userOneId,
+                                          @Valid @Positive Long userTwoId) {
+        return friendStorage.getMutualFriendList(userOneId, userTwoId);
     }
 }
+
