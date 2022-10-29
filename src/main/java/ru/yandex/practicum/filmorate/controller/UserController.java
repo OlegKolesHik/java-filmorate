@@ -31,27 +31,27 @@ public class UserController {
     }
 
     @GetMapping("/users/{id}")
-    public User handleGetUser(@PathVariable Long id) {
+    public User getUser(@PathVariable Long id) {
         return userService.getUser(id);
     }
 
     @PutMapping("/users/{id}/friends/{friendId}")
-    public void handleAddFriend(@PathVariable Long id, @PathVariable Long friendId) {
+    public void addFriend(@PathVariable Long id, @PathVariable Long friendId) {
         userService.addFriendship(id, friendId);
     }
 
     @DeleteMapping("/users/{id}/friends/{friendId}")
-    public void handleDeleteFriend(@PathVariable Long id, @PathVariable Long friendId) {
+    public void deleteFriend(@PathVariable Long id, @PathVariable Long friendId) {
         userService.deleteFriendship(id, friendId);
     }
 
     @GetMapping("/users/{id}/friends")
-    public List<User> handleGetFriendList(@PathVariable Long id) {
+    public List<User> getFriendList(@PathVariable Long id) {
         return userService.getFriendsList(id);
     }
 
     @GetMapping("/users/{id}/friends/common/{otherId}")
-    public List<User> handleGetMutualFriendsList(@PathVariable Long id, @PathVariable Long otherId) {
+    public List<User> getMutualFriendsList(@PathVariable Long id, @PathVariable Long otherId) {
         return userService.getMutualFriendList(id, otherId);
     }
 }

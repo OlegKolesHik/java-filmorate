@@ -16,18 +16,21 @@ public class ErrorHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleValidation(ValidationException e) {
+        log.info("400 {}", e.getMessage());
         return new ErrorResponse("Ошибка проверки", e.getMessage());
     }
 
     @ExceptionHandler(NotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleNotFoundCases(RuntimeException e) {
+        log.info("404 {}", e.getMessage());
         return new ErrorResponse("Объект не найден", e.getMessage());
     }
 
     @ExceptionHandler(ProcessingException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse handleInternalErrors(RuntimeException e) {
+        log.info("500 {}", e.getMessage());
         return new ErrorResponse("Ошибка обработки", e.getMessage());
     }
 }
