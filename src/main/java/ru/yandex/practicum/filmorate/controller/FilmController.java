@@ -1,80 +1,77 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import ru.yandex.practicum.filmorate.exceptions.ValidationException;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import ru.yandex.practicum.filmorate.model.Film;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Mpa;
+import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
-import java.time.LocalDate;
-import java.time.Month;
-import java.util.*;
+import java.util.List;
 
-@Slf4j
 @RestController
-@RequestMapping("/films")
+@Slf4j
+@RequiredArgsConstructor
 public class FilmController {
+    private final FilmService filmService;
 
-    private final Map<Integer, Film> films = new HashMap();
-    protected LocalDate data = LocalDate.of(1895, Month.DECEMBER, 28);
-    private int generateId = 0;
-
-    protected void validate(Film film) throws ValidationException {
-        if(film.getName() == null || film.getName().isBlank()) {
-            log.error("Ошибка");
-            throw new ValidationException("Hазвание не может быть пустым");
-        }
-        if(film.getDescription().length() > 200) {
-            log.error("Ошибка");
-            throw new ValidationException("Максимальная длина описания — 200 символов");
-        }
-        if(film.getReleaseDate().isBefore(data)) {
-            log.error("Ошибка");
-            throw new ValidationException("Дата релиза — не раньше 28 декабря 1895 года");
-        }
-        if(film.getDuration() < 0) {
-            log.error("Ошибка");
-            throw new ValidationException("Продолжительность фильма должна быть положительной");
-        }
-        if(film.getId() < 0) {
-            log.debug("Идентификатор меньше 0");
-            throw new ValidationException("Идентификатор должен быть положительным");
-        }
+    @PostMapping("/films")
+    public Film createFilm(@Valid @RequestBody final Film film) {
+        return filmService.createFilm(film);
     }
 
-
-    //добавление фильма;
-    @PostMapping
-    public Film create(@RequestBody Film film) throws ValidationException {
-        validate(film);
-        if (films.containsKey(film.getId())) {
-            throw new ValidationException("Фильм уже есть в списке");
-        } else {
-            film.setId(++generateId);
-            films.put(film.getId(), film);
-            log.info("Фильм {} добавлен", film.getName());
-            return film;
-        }
+    @PutMapping("/films")
+    public Film updateFilm(@Valid @RequestBody final Film film) {
+        return filmService.updateFilm(film);
     }
 
-    //обновление фильма;
-    @PutMapping
-    public Film update(@RequestBody Film film) throws ValidationException {
-        validate(film);
-        if (!films.containsKey(film.getId())) {
-            create(film);
-        } else {
-            films.put(film.getId(), film);
-            log.info("Фильм {} обновлен", film.getName());
-
-        }
-        return film;
+    @GetMapping("/films")
+    public List<Film> getFilmList() {
+        return filmService.getFilmList();
     }
 
-    //получение всех фильмов.
-    @GetMapping
-    public Collection<Film> allFilms() {
-        log.info("Список фильмов {}", films.size());
-        return films.values();
+    @GetMapping("/films/{id}")
+    public Film getFilm(@PathVariable Long id) {
+        return filmService.getFilm(id);
+    }
+
+    @GetMapping("/films/popular")
+    public List<Film> getMostLikedFilms(@RequestParam(required = false, defaultValue = "10") Integer count) {
+        return filmService.getMostLikedFilms(count);
+    }
+
+    @PutMapping("/films/{id}/like/{userId}")
+    public void addLike(@PathVariable final Long id, @PathVariable final Long userId) {
+        filmService.addLike(id, userId);
+    }
+
+    @DeleteMapping("/films/{id}/like/{userId}")
+    public void deleteLike(@PathVariable final Long id, @PathVariable final Long userId) {
+        filmService.deleteLike(id, userId);
+    }
+
+    @GetMapping("/mpa")
+    public List<Mpa> getMpaList() {
+        return filmService.getMpaList();
+    }
+
+    @GetMapping("/mpa/{id}")
+    public Mpa getMpa(@PathVariable final Long id) throws NotFoundException {
+        return filmService.getMpa(id);
+    }
+
+    @GetMapping("/genres")
+    public List<Genre> getGenreList() {
+        return filmService.getGenreList();
+    }
+
+    @GetMapping("/genres/{id}")
+    public Genre getGenre(@PathVariable final Long id) {
+        return filmService.getGenre(id);
     }
 }
+

@@ -1,25 +1,26 @@
 package ru.yandex.practicum.filmorate.model;
 
-import lombok.Data;
+import lombok.*;
 
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+import javax.validation.constraints.*;
 import java.time.LocalDate;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 @Data
+@RequiredArgsConstructor
+@EqualsAndHashCode(of = "id")
 public class Film {
-
+    private Long id;
     @NotBlank
-    @Size(min = 1, max = 200)
+    private final String name;
+    private final LocalDate releaseDate;
+    @Size(max=200)
+    private final String description;
+    @Positive
+    private final Long duration;
     @NotNull
-    @Min(1)
-    private int id;
-    private String name;
-    private String description;
-    private LocalDate releaseDate;
-    private int duration;
-
-
+    private final Mpa mpa;
+    @Setter
+    private Set<Genre> genres = new LinkedHashSet<>();
 }
